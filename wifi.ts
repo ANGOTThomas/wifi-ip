@@ -1,5 +1,5 @@
 0
-//% color=#009b5b icon="\uf1eb" block="Wifi Techno"
+//% color=#E7F527 icon="\uf1eb" block="Wifi Techno"
 namespace WifiTechno {
 
     let buffer = ""
@@ -66,19 +66,17 @@ namespace WifiTechno {
 
         sendAtCmd("AT+CWMODE=1")
         result = waitAtResponse("OK", "ERROR", "None", 1000)
-        //grove.lcd_show_string("AT+CWMODE=1", 0, 0)
+        grove.lcd_show_string("AT+CWMODE=1", 0, 0)
+        
         sendAtCmd("AT+CWHOSTNAME=\"Micro:bit\"")
-       
+        grove.lcd_show_string("HOSTNAME        ", 0, 0)
         
-        
-        //basic.showString("w")
+               
         buffer = ""
         sendAtCmd("AT+CWJAP=\"" + ssid + "\",\"" + passwd + "\"")
-        result = waitAtResponse("WIFI GOT IP", "ERROR", "None", 30000)
-
-        //basic.showString(convertToText(result))
-
-        //grove.lcd_show_string(buffer, 0, 0)
+        result = waitAtResponse("WIFI GOT IP", "ERROR", "None", 20000)
+        grove.lcd_show_string("WIFI            ", 0, 0)
+        grove.lcd_show_string(buffer, 1, 0)
 
         if (result == 1) {
             isWifiConnected = true
@@ -116,20 +114,21 @@ namespace WifiTechno {
         sendAtCmd("ATE0")
         pause(100)
 
-        //grove.lcd_show_string("AT et ATE0", 0, 0)
+        grove.lcd_show_string("AT et ATE0", 0, 0)
 
         sendAtCmd("AT+CWMODE=1")
         result = waitAtResponse("OK", "ERROR", "None", 1000)
-        //grove.lcd_show_string("AT+CWMODE=1", 0, 0)
+        grove.lcd_show_string("AT+CWMODE=1", 0, 0)
         sendAtCmd("AT+CWHOSTNAME=\"Micro:bit\"")
+        grove.lcd_show_string("HOSTNAME        ", 0, 0)
 
-        //basic.showString("1")
         sendAtCmd("AT+CWDHCP=0,3")
         pause(100)
+        grove.lcd_show_string("STOP DHCP        ", 0, 0)
 
-        //basic.showString("2")
         sendAtCmd("AT+CIPSTA=\"" + adresseip + "\",\"" + gateway + "\",\"" + masquesr + "\"")
         result = waitAtResponse("OK", "ERROR", "None", 1000)
+        grove.lcd_show_string("FIXE IP           ", 0, 0)
 
         //grove.lcd_clear()
         //grove.lcd_show_string("ip", 0, 0)
@@ -140,7 +139,8 @@ namespace WifiTechno {
         sendAtCmd("AT+CWJAP=\"" + ssid + "\",\"" + passwd + "\"")
         buffer=""
         result = waitAtResponse("OK", "ERROR", "None", 20000)
-        
+        grove.lcd_show_string("WIFI            ", 0, 0)
+        grove.lcd_show_string(buffer, 1, 0)
 
         if (result == 1) {
             isWifiConnected = true
