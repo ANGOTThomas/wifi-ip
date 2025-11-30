@@ -1,9 +1,43 @@
-
+0
 //% color=#009b5b icon="\uf1eb" block="Wifi Techno"
 namespace WifiTechno {
 
     let buffer = ""
     let isWifiConnected = false;
+
+    /**
+     * Uart WiFi V2 Initialisation
+     */
+    //% block="Initialisation Wifi|TX %txPin|RX %rxPin|Débit %baudrate"
+    //% group="UartWiFi"
+    //% txPin.defl=SerialPin.P15
+    //% rxPin.defl=SerialPin.P1
+    //% baudRate.defl=BaudRate.BaudRate115200
+    export function InitWifi(txPin: SerialPin, rxPin: SerialPin, baudRate: BaudRate) {
+        
+        isWifiConnected = false
+
+        serial.redirect(
+            txPin,
+            rxPin,
+            baudRate
+        )
+        sendAtCmd("AT+RESTORE")
+        pause(1000)
+
+        serial.redirect(
+            txPin,
+            rxPin,
+            baudRate
+        )
+
+        sendAtCmd("AT+RST")
+        pause(1000)
+    }
+
+
+
+
     /**
      * Uart WiFi V2 connecté au Wi-Fi
      */
@@ -27,22 +61,24 @@ namespace WifiTechno {
         pause(100)
         sendAtCmd("ATE0")
         pause(100)
+        
         grove.lcd_show_string("AT et ATE0", 0, 0)
 
         sendAtCmd("AT+CWMODE=1")
         result = waitAtResponse("OK", "ERROR", "None", 1000)
-        grove.lcd_show_string("AT+CWMODE=1", 0, 0)
+        //grove.lcd_show_string("AT+CWMODE=1", 0, 0)
+        sendAtCmd("AT+CWHOSTNAME=\"Micro:bit\"")
+       
         
         
+        //basic.showString("w")
         buffer = ""
         sendAtCmd("AT+CWJAP=\"" + ssid + "\",\"" + passwd + "\"")
-        result = waitAtResponse("WIFI GOT IP", "ERROR", "None", 20000)
-        grove.lcd_show_string(buffer, 0, 0)
-        basic.showString("W " + convertToText(result))
-        
-        
-        pause(1000)
+        result = waitAtResponse("WIFI GOT IP", "ERROR", "None", 30000)
 
+        //basic.showString(convertToText(result))
+
+        //grove.lcd_show_string(buffer, 0, 0)
 
         if (result == 1) {
             isWifiConnected = true
@@ -52,7 +88,7 @@ namespace WifiTechno {
     /**
     * Uart WiFi V2 connecté au Wi-Fi (IP Fixe)
      */
-    //% block="Configure Wifi|TX %txPin|RX %rxPin|Débit %baudrate|SSID = %ssid|Mot de passe = %passwd" |Adresse IP = %adresseip |Passerelle = %gateway | Masque = %masquesr"
+    //% block="Configure Wifi|TX %txPin|RX %rxPin|Débit %baudrate|SSID = %ssid|Mot de passe = %passwd |Adresse IP = %adresseip |Passerelle = %gateway | Masque = %masquesr"
     //% group="UartWiFi"
     //% txPin.defl=SerialPin.P15
     //% rxPin.defl=SerialPin.P1
@@ -76,20 +112,40 @@ namespace WifiTechno {
         )
 
         sendAtCmd("AT")
-        result = waitAtResponse("OK", "ERROR", "None", 1000)
+        pause(100)
+        sendAtCmd("ATE0")
+        pause(100)
+
+        //grove.lcd_show_string("AT et ATE0", 0, 0)
 
         sendAtCmd("AT+CWMODE=1")
         result = waitAtResponse("OK", "ERROR", "None", 1000)
+        //grove.lcd_show_string("AT+CWMODE=1", 0, 0)
+        sendAtCmd("AT+CWHOSTNAME=\"Micro:bit\"")
 
-        sendAtCmd(`AT+CWJAP="${ssid}","${passwd}"`)
-        result = waitAtResponse("WIFI GOT IP", "ERROR", "None", 20000)
+        //basic.showString("1")
+        sendAtCmd("AT+CWDHCP=0,3")
+        pause(100)
 
-        sendAtCmd(`AT+CIPSTA="${adresseip}","${gateway}","${masquesr}"`)
-        //result = waitAtResponse("OK", "ERROR", "None", 1000)
+        //basic.showString("2")
+        sendAtCmd("AT+CIPSTA=\"" + adresseip + "\",\"" + gateway + "\",\"" + masquesr + "\"")
+        result = waitAtResponse("OK", "ERROR", "None", 1000)
+
+        //grove.lcd_clear()
+        //grove.lcd_show_string("ip", 0, 0)
+        //grove.lcd_show_string(buffer, 0, 1)
+        //pause(10000)
+
+        basic.showString("w")
+        sendAtCmd("AT+CWJAP=\"" + ssid + "\",\"" + passwd + "\"")
+        buffer=""
+        result = waitAtResponse("OK", "ERROR", "None", 20000)
         
+
         if (result == 1) {
             isWifiConnected = true
         }
+        
     }
 
 
@@ -106,9 +162,9 @@ namespace WifiTechno {
     /**
      * Send data to ThinkSpeak
      */
-    //% block="Send Data to your ThinkSpeak Channel|Write API Key %apiKey|Field1 %field1|Field2 %field2|Field3 %field3|Field4 %field4|Field5 %field5|Field6 %field6|Field7 %field7|Field8 %field8"
+    //% block="Envoie vos données vers votre canal ThinkSpeak|Clé API d'écriture %apiKey|Champ1 %field1|Champ2 %field2|Champ3 %field3|Champ4 %field4|Champ5 %field5|Champ6 %field6|Champ7 %field7|Champ8 %field8"
     //% group="UartWiFi"
-    //% apiKey.defl="your Write API Key"
+    //% apiKey.defl="votre Clé API d'écriture"
     export function sendToThinkSpeak(apiKey: string, field1: number, field2: number, field3: number, field4: number, field5: number, field6: number, field7: number, field8: number) {
         let result = 0
         let retry = 2
@@ -208,7 +264,7 @@ namespace WifiTechno {
     function waitAtResponse(target1: string, target2: string, target3: string, timeout: number) {
         
         let start = input.runningTime()
-
+        buffer=""
         while ((input.runningTime() - start) < timeout) {
             buffer += serial.readString()
 
