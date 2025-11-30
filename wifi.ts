@@ -76,7 +76,7 @@ namespace WifiTechno {
         sendAtCmd("AT+CWJAP=\"" + ssid + "\",\"" + passwd + "\"")
         result = waitAtResponse("WIFI GOT IP", "ERROR", "None", 20000)
         grove.lcd_show_string("WIFI            ", 0, 0)
-        grove.lcd_show_string(buffer, 1, 0)
+        grove.lcd_show_string(buffer, 0, 1)
 
         if (result == 1) {
             isWifiConnected = true
@@ -140,7 +140,7 @@ namespace WifiTechno {
         buffer=""
         result = waitAtResponse("OK", "ERROR", "None", 20000)
         grove.lcd_show_string("WIFI            ", 0, 0)
-        grove.lcd_show_string(buffer, 1, 0)
+        grove.lcd_show_string(buffer, 0, 1)
 
         if (result == 1) {
             isWifiConnected = true
